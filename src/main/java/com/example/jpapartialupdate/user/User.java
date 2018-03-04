@@ -2,6 +2,7 @@ package com.example.jpapartialupdate.user;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -14,7 +15,7 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @Entity(name = "APP_USER")
-//@DynamicUpdate
+@DynamicUpdate
 public class User implements Serializable {
 
 	@Id
