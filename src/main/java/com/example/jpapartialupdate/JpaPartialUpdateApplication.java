@@ -7,10 +7,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -25,13 +23,7 @@ public class JpaPartialUpdateApplication {
 	private FetchAndUpdateUserRepository userRepository;
 
 	@Autowired
-	private ShortVersionRepository shortVersionRepository;
-
-	@Autowired
 	private CriteriaUpdateRepository criteriaUpdateRepository;
-
-	@Autowired
-	private JPQLRepository jpqlRepository;
 
 	@GetMapping("/users/{id}")
 	public User getUser(@PathVariable("id") Long id) {
@@ -44,38 +36,23 @@ public class JpaPartialUpdateApplication {
 	}
 
 //	FETCH AND UPDATE
-	@PostMapping("/users/{id}/update-contact-info/")
-	public User fetchAndUpdate(@PathVariable Long id, User user) {
-		log.info(user.toString());
-		User persistedUser = userRepository.updateContactInformation(user, id);
-		log.info(persistedUser.toString());
-		return persistedUser;
-	}
-
-// SHORT VERSION OF ENTITY
-	@PostMapping("/users/{id}/short-version-update/")
-	public UserContactInfo shortVersionUpdate(@PathVariable Long id, UserContactInfo userContactInfo) {
-		return shortVersionRepository.updateContactInformation(userContactInfo, id);
+	@PatchMapping(value = "/users/{id}/update-contact-info/", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public User fetchAndUpdate(@PathVariable("id") Long id, @RequestBody User user) {
+		return userRepository.updatePartial(user, id);
 	}
 
 //	CRITERIA UPDATE
-	@PostMapping("/users/{id}/criteria-update/")
-	public User criteriaUpdate(@PathVariable Long id, User user) {
-		return criteriaUpdateRepository.updateContactInformation(user, id);
+	@PatchMapping(value = "/users/{id}/criteria-update/", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public User criteriaUpdate(@RequestBody User user, @PathVariable Long id) {
+		return criteriaUpdateRepository.updatePartial(user, id);
 	}
-
-	@PostMapping("/users/{id}/jpql-update/")
-	public User jpqlUpdate(@PathVariable Long id, User user) {
-		return jpqlRepository.updateContactInformation(user, id);
-	}
-
 
 
 	@Bean
 	public CommandLineRunner initialDataForDevelopment(FetchAndUpdateUserRepository userRepository) {
 
 		return (args) -> {
-			User user = new User("johndoe", "securePassword1", "john@jd.com", "05001112233");
+			User user = new User("john", "doe", "john@jd.com", "05001112233");
 			userRepository.save(user);
 			log.info(user.toString());
 		};
